@@ -1,0 +1,57 @@
+﻿@page "/cards"
+@using Terminal.Shared.Response.Card;
+@inject HttpClient httpClient;
+
+<PageTitle>Card Operations</PageTitle>
+
+<h3>Card</h3>
+@if (cardResponses.CardEnumramles == null)
+{
+    <p><em>Loading...</em></p>
+    <p><em>Dosen't cconnect to Server...</em></p>
+}
+else
+{
+    <table class="table table-striped align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>Счёт Дебит</th>
+                <th>Счёт Кредит</th>
+                <th>Сумма</th>
+                <th>ID Транзакции</th>
+                <th>Назначение</th>
+                <th>Дата операции</th>
+                <th>Операции</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in cardResponses.CardEnumramles)
+            {
+                <tr>
+                    <td>@user.Account_db</td>
+                    <td>@user.Account_cr</td>
+                    <td>@user.Amount</td>
+                    <td>@user.CardTransferId</td>
+                    <td>@user.AboutPay</td>
+                    <td>@user.DateCreated</td>
+                    <td>
+                        <a href='/user/edit/@user.Id' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+ }
+
+@code {
+    private CardResponses? cardResponses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cardResponses = await httpClient.GetFromJsonAsync<CardResponses>($"api/Card/GetAll");
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,61 @@
+﻿@page "/wallets"
+@using Terminal.Shared.Response.Wallet;
+
+@inject HttpClient httpClient;
+
+<PageTitle>Wallet Operations</PageTitle>
+
+<h3>Wallet</h3>
+
+
+@if (walletsResponses.WalletEnumrables == null)
+{
+    <p><em>Loading...</em></p>
+    <p><em>Dosen't cconnect to Server...</em></p>
+}
+else
+{
+    <table class="table table-striped align-middle table-bordered">
+        <thead class="table-success">
+            <tr>
+                <th>Счёт Дебит</th>
+                <th>Счёт Кредит</th>
+                <th>Сумма</th>
+                <th>ID Транзакции</th>
+                <th>Назначение</th>
+                <th>Дата операции</th>
+                <th>Операции</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in walletsResponses.WalletEnumrables)
+            {
+                <tr>
+                    <td>@user.Account_db</td>
+                    <td>@user.Account_cr</td>
+                    <td>@user.Amount</td>
+                    <td>@user.WalletTransferId</td>
+                    <td>@user.AboutPay</td>
+                    <td>@user.DateCreated</td>
+                    <td>
+                        <a href='/user/edit/@user.Id' class="btn btn-outline-dark" role="button">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+
+@code {
+
+    private WalletResponses? walletsResponses;
+
+    protected override async Task OnInitializedAsync()
+    {
+        walletsResponses = await httpClient.GetFromJsonAsync<WalletResponses>($"api/Wallet/GetAll");
+        await base.OnInitializedAsync();
+    }
+}

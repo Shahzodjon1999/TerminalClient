@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerminalClient", "TerminalClient\TerminalClient.csproj", "{A425838B-F5B3-4165-95F1-D118876772C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Terminal.Shared", "Terminal.Shared\Terminal.Shared.csproj", "{91A8A29F-12B2-4575-B000-02FE7E217DA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A425838B-F5B3-4165-95F1-D118876772C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A425838B-F5B3-4165-95F1-D118876772C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A425838B-F5B3-4165-95F1-D118876772C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A425838B-F5B3-4165-95F1-D118876772C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91A8A29F-12B2-4575-B000-02FE7E217DA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91A8A29F-12B2-4575-B000-02FE7E217DA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91A8A29F-12B2-4575-B000-02FE7E217DA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91A8A29F-12B2-4575-B000-02FE7E217DA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6FBFBCE-5EAF-430B-A1D9-5CE5EC835F65}
+	EndGlobalSection
+EndGlobal
