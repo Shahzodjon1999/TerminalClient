@@ -1,20 +1,31 @@
 ﻿@page "/wallets"
+@using OfficeOpenXml;
 @using Terminal.Shared.Response.Wallet;
 
 @inject HttpClient httpClient;
+@inject IJSRuntime js
 
 <PageTitle>Wallet Operations</PageTitle>
 
-<h3>Wallet</h3>
-
-
-@if (walletsResponses.WalletEnumrables == null)
+<h3>Кашелок матин</h3>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <input type="date" class="form-control" @bind="startdate" required format-value="yyyy-MM-dd" />
+    </div>
+    <div class="col-md-4 mb-3">
+        <input type="date" class="form-control" @bind="enddate" required format-value="yyyy-MM-dd" />
+    </div>
+    <div class="col-md-4 mb-3">
+        <button class="btn btn-primary" type="button" @onclick="ShowDate">Найтий</button>
+    </div>
+</div>
+@if (walletsResponses == null)
 {
-    <p><em>Loading...</em></p>
-    <p><em>Dosen't cconnect to Server...</em></p>
+    <p><em>Loading...@message</em></p>
 }
 else
 {
+     <div class="form-group">
     <table class="table table-striped align-middle table-bordered">
         <thead class="table-success">
             <tr>
@@ -24,7 +35,6 @@ else
                 <th>ID Транзакции</th>
                 <th>Назначение</th>
                 <th>Дата операции</th>
-                <th>Операции</th>
             </tr>
         </thead>
         <tbody>
@@ -34,28 +44,92 @@ else
                     <td>@user.Account_db</td>
                     <td>@user.Account_cr</td>
                     <td>@user.Amount</td>
-                    <td>@user.WalletTransferId</td>
+                    <td>@user.Transfer</td>
                     <td>@user.AboutPay</td>
                     <td>@user.DateCreated</td>
-                    <td>
-                        <a href='/user/edit/@user.Id' class="btn btn-outline-dark" role="button">
-                            Edit
-                        </a>
-                    </td>
                 </tr>
             }
         </tbody>
 
     </table>
+    <button type="button" class="btn btn-success mb-2" @onclick="CreateExcelFile">Create Excel File</button>
+</div>
 }
 
 @code {
 
     private WalletResponses? walletsResponses;
+    private string message = "";
+    private DateTime? startdate;
 
+    private DateTime? enddate;
     protected override async Task OnInitializedAsync()
     {
-        walletsResponses = await httpClient.GetFromJsonAsync<WalletResponses>($"api/Wallet/GetAll");
+        walletsResponses = await httpClient.GetFromJsonAsync<WalletResponses>($"api/Wallet/GetAllDate");
         await base.OnInitializedAsync();
+    }
+    private async Task ShowDate()
+    {
+        if (startdate != null && enddate != null)
+        {
+            walletsResponses = await httpClient.GetFromJsonAsync<WalletResponses>($"api/Wallet/GetAll?start={startdate}&end={enddate}");
+            await base.OnInitializedAsync();
+        }
+        else
+        {
+            message = "Шумо санахоро интихоб накардед!!!";
+        }
+    }
+    private async Task CreateExcelFile()
+    {
+        byte[] excelData;
+
+        using (var package = new ExcelPackage())
+        {
+            var worksheet = package.Workbook.Worksheets.Add("Trans");
+            // Add header
+            worksheet.Cells[1, 1].Value = " ";
+            worksheet.Cells[1, 2].Value = "Trans_Date";
+            worksheet.Cells[1, 3].Value = DateTime.Now.ToString("dd.MM.yyyy");
+            worksheet.Cells[3, 1].Value = "N";
+            worksheet.Cells[3, 2].Value = "Account_debet";
+            worksheet.Cells[3, 3].Value = "Account_credit";
+            worksheet.Cells[3, 4].Value = "Amount";
+            worksheet.Cells[3, 5].Value = "KNP";
+            worksheet.Cells[3, 6].Value = "Purpose";
+            worksheet.Cells[3, 7].Value = "Stratus";
+
+            // Add data
+            int i = 0;
+            int j = 0;
+            foreach (var operation in walletsResponses.WalletEnumrables)
+            {
+                worksheet.Cells[j + 4, 1].Value = i++;
+                worksheet.Cells[j + 4, 2].Value = operation.Account_db;
+                worksheet.Cells[j + 4, 3].Value = operation.Account_cr;
+                worksheet.Cells[j + 4, 4].Value = operation.Amount;
+                worksheet.Cells[j + 4, 5].Value = "";
+                worksheet.Cells[j + 4, 6].Value = operation.AboutPay;
+                worksheet.Cells[j + 4, 7].Value = "";
+                j++;
+                worksheet.Cells[j + 4, 1].Value = i++;
+                worksheet.Cells[j + 4, 2].Value = operation.acct_2;
+                worksheet.Cells[j + 4, 3].Value = operation.acct_1;
+                worksheet.Cells[j + 4, 4].Value = operation.Amount;
+                worksheet.Cells[j + 4, 5].Value = "";
+                worksheet.Cells[j + 4, 6].Value = operation.AboutPay;
+                worksheet.Cells[j + 4, 7].Value = "";
+                j++;
+            }
+            // Save the file
+            var stream = new MemoryStream();
+            package.SaveAs(stream);
+
+            //workSheet.Cells.LoadFromCollection(dcResponses.DcEnumramles, true);
+            excelData = package.GetAsByteArray();
+        }
+
+        var contentBase64 = Convert.ToBase64String(excelData);
+        await js.InvokeVoidAsync("window.triggerFileDownload", "MyExcelFile.xlsx", contentBase64);
     }
 }

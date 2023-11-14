@@ -1,83 +1,99 @@
-﻿@page "/cards"
+﻿@page "/dcnotsecc"
+
 @using OfficeOpenXml;
-@using Terminal.Shared.Response.Card;
+@using Terminal.Shared.Response.DcResponse;
+@using TerminalClient.ExcportExcel;
+
+@inject NavigationManager NavigationManager;
 @inject HttpClient httpClient;
 @inject IJSRuntime js
 
-<PageTitle>Card Operations</PageTitle>
+<PageTitle>Успешно лист</PageTitle>
 
-<h3>Корти матин</h3>
+<h3>Dc Успешно оплатит </h3>
 
-<div class="row">
+ <div class="row">
+    <div class="col-md-4 mb-3"> 
+    <input type="date" class="form-control" @bind="startdate" required format-value="yyyy-MM-dd" />
+    </div>   
     <div class="col-md-4 mb-3">
-        <input type="date" class="form-control" @bind="startdate" required format-value="yyyy-MM-dd" />
+            <input type="date" class="form-control" @bind="enddate" required format-value="yyyy-MM-dd" />
+           </div>
+            <div class="col-md-4 mb-3">
+             <button class="btn btn-primary" type="button" @onclick="ShowDate">Найтий</button>
     </div>
-    <div class="col-md-4 mb-3">
-        <input type="date" class="form-control" @bind="enddate" required format-value="yyyy-MM-dd" />
-    </div>
-    <div class="col-md-4 mb-3">
-        <button class="btn btn-primary" type="button" @onclick="ShowDate">Найтий</button>
-    </div>
-</div>
-@if (cardResponses == null)
-{
+   
+</div> 
+    @if (dcResponses == null)
+    {
     <p><em>Loading...@message</em></p>
-}
-else
-{
-    <table class="table table-striped align-middle table-bordered">
-        <thead class="table-success">
-            <tr>
-                <th>Счёт Дебит</th>
-                <th>Счёт Кредит</th>
-                <th>Сумма</th>
-                <th>ID Транзакции</th>
-                <th>Назначение</th>
-                <th>Дата операции</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in cardResponses.CardEnumramles)
-            {
+    }
+    else
+    {
+        <div class="form-group">
+        <table class="table table-striped align-middle table-bordered">
+            <thead class="table-success">
                 <tr>
-                    <td>@user.Account_db</td>
-                    <td>@user.Account_cr</td>
-                    <td>@user.Amount</td>
-                    <td>@user.Transfer</td>
-                    <td>@user.AboutPay</td>
-                    <td>@user.DateCreated</td>
+                    <th>№</th>
+                    <th>Счёт Дебит</th>
+                    <th>Счёт Кредит</th>
+                    <th>Сумма</th>
+                    <th>ID Транзакции</th>
+                    <th>Назначение</th>
+                    <th>Дата операции</th>
                 </tr>
-            }
-        </tbody>
+            </thead>
+            <tbody>
+                @foreach (var user in dcResponses.DcEnumramles)
+                {
+                    <tr>
+                        <th>@count</th>
+                        <td>@user.Account_db</td>
+                        <td>@user.Account_cr</td>
+                        <td>@user.Amount</td>
+                        <td>@user.Transfer</td>
+                        <td>@user.AboutPay</td>
+                        <td>@user.DateCreated</td>  
+                    </tr>
+                    count++;
+                }
+            </tbody>
 
-    </table>
-    <button type="button" class="btn btn-success mb-2" @onclick="CreateExcelFile">Create Excel File</button>
- }
-
+        </table>
+        <button type="button" class="btn btn-success mb-2" @onclick="CreateExcelFile">Create Excel File</button>
+    </div>
+    }
 @code {
-    private CardResponses? cardResponses;
-    private string message = "";
+    private DcResponses? dcResponses;
+
+    private string message="";
+
+    private int count = 0;
+
     private DateTime? startdate;
 
     private DateTime? enddate;
+
     protected override async Task OnInitializedAsync()
     {
-        cardResponses = await httpClient.GetFromJsonAsync<CardResponses>($"api/Card/GetToday");
+        dcResponses = await httpClient.GetFromJsonAsync<DcResponses>($"api/Dc/getToday");
         await base.OnInitializedAsync();
     }
     private async Task ShowDate()
     {
-        if (startdate != null && enddate != null)
+        if (startdate!=null && enddate !=null)
         {
-            cardResponses = await httpClient.GetFromJsonAsync<CardResponses>($"api/Card/GetAll?start={startdate}&end={enddate}");
+            count = 0;
+
+            dcResponses = await httpClient.GetFromJsonAsync<DcResponses>($"api/Dc/GetAll?start={startdate}&end={enddate}");
             await base.OnInitializedAsync();
         }
         else
         {
             message = "Шумо санахоро интихоб накардед!!!";
         }
-    }
 
+    }
     private async Task CreateExcelFile()
     {
         byte[] excelData;
@@ -100,7 +116,7 @@ else
             // Add data
             int i = 0;
             int j = 0;
-            foreach (var operation in cardResponses.CardEnumramles)
+            foreach (var operation in dcResponses.DcEnumramles)
             {
                 worksheet.Cells[j + 4, 1].Value = i++;
                 worksheet.Cells[j + 4, 2].Value = operation.Account_db;
@@ -118,8 +134,8 @@ else
                 worksheet.Cells[j + 4, 6].Value = operation.AboutPay;
                 worksheet.Cells[j + 4, 7].Value = "";
                 j++;
-            }
-            // Save the file
+            }  
+           // Save the file
             var stream = new MemoryStream();
             package.SaveAs(stream);
 
@@ -130,5 +146,4 @@ else
         var contentBase64 = Convert.ToBase64String(excelData);
         await js.InvokeVoidAsync("window.triggerFileDownload", "MyExcelFile.xlsx", contentBase64);
     }
-  
 }

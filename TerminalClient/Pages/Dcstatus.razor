@@ -1,0 +1,112 @@
+﻿@page "/dcstatus"
+
+@using System.Text.Json;
+@using System.Text;
+@using Terminal.Shared.Response.DcResponse;
+
+@inject NavigationManager NavigationManager;
+@inject HttpClient httpClient;
+
+<PageTitle>Успешно лист</PageTitle>
+
+<h3>Dc Ошибка оплатить </h3>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <input type="date" class="form-control" @bind="startdate" required format-value="yyyy-MM-dd" />
+    </div>
+    <div class="col-md-4 mb-4">
+        <input type="date" class="form-control" @bind="enddate" required format-value="yyyy-MM-dd" />
+    </div>
+    <div class="col-md-4 mb-4">
+        <button class="btn btn-primary" type="button" @onclick="ShowDate">Найтий</button>
+    </div>
+    <div class="col-md-4 mb-4">
+        <button class="btn btn-primary" type="button" @onclick="SendProperties">Оплатить</button>
+    </div>
+</div>
+@if (DcStatusResponses == null)
+{
+    <p><em>Loading...@message</em></p>
+}
+else
+{
+    <div class="form-group">
+        <table class="table table-striped align-middle table-bordered">
+            <thead class="table-success">
+                <tr>
+                    <th>Сумма</th>
+                    <th>ID Транзакции</th>
+                    <th>Счёт</th>
+                    <th>Провайдер</th>
+                    <th>Ощибка</th>
+                    <th>Дата операции</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in DcStatusResponses.StatusResponses)
+                {
+                    <tr>
+                        <td>@user.Amount</td>
+                        <td>@user.TransferId</td>
+                        <td>@user.Account</td>
+                        <td>@user.name_provider</td>
+                        <td>@user.Error_massage</td>
+                        <td>@user.DateTimeSave</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+}
+@code {
+    private DcStatusResponses? DcStatusResponses;
+
+    private string message = "";
+
+    private DateTime? startdate;
+
+    private DateTime? enddate;
+
+    private long DcTransfer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DcStatusResponses = await httpClient.GetFromJsonAsync<DcStatusResponses>($"api/Dc/status");
+        await base.OnInitializedAsync();
+    }
+    private async Task ShowDate()
+    {
+        if (startdate != null && enddate != null)
+        {
+            DcStatusResponses = await httpClient.GetFromJsonAsync<DcStatusResponses>($"api/Dc/GetAllError?start={startdate}&end={enddate}");
+            await base.OnInitializedAsync();
+        }
+        else
+        {
+            message = "Шумо санахоро интихоб накардед!!!";
+        }
+    }
+    private async Task SendProperties()
+    {
+        if (DcStatusResponses.StatusResponses!=null)
+        {
+            foreach (var item in DcStatusResponses.StatusResponses)
+            {
+                var response = await httpClient.GetAsync($"api/Dc/statusPhone?DcTransferId={item.DcTransferId}&Account={item.Account}&TerminalId={item.TerminalId}&Amount={item.Amount}&Provider={item.Provider}&TransferId={item.TransferId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Data sent successfully");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to send data");
+                }
+            }
+            await OnInitializedAsync();
+        }
+        
+    }
+}

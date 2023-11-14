@@ -24,5 +24,8 @@ namespace Terminal.Shared.Response.Card
         public long CardTransferId { get; set; }
 
         public DateTime DateCreated { get; set; }
+        public string acct_1 { get; set; } = string.Empty;
+
+        public string acct_2 { get; set; } = string.Empty;
     }
 }

@@ -27,5 +27,8 @@ namespace Terminal.Shared.Response.Wallet
         public long WalletTransferId { get; set; }
 
         public DateTime DateCreated { get; set; }
+        public string acct_1 { get; set; } = string.Empty;
+
+        public string acct_2 { get; set; } = string.Empty;
     }
 }

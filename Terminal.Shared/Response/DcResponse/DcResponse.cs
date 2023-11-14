@@ -9,7 +9,6 @@ namespace Terminal.Shared.Response.DcResponse
     public class DcResponse
     {
         public Guid Id { get; set; }
-
         public string Account_db { get; set; } = string.Empty;
 
         public string Account_cr { get; set; } = string.Empty;
@@ -29,5 +28,9 @@ namespace Terminal.Shared.Response.DcResponse
         public long DcTransferId { get; set; }
 
         public DateTime DateCreated { get; set; }
+
+        public string acct_1 { get; set; } = string.Empty;
+
+        public string acct_2 { get; set; } = string.Empty;
     }
 }
